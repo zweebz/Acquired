@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acquired — Company History Explorer</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0c;
+  --surface:#111114;
+  --surface2:#18181c;
+  --border:#252529;
+  --text:#e8e6e3;
+  --text2:#9b9a97;
+  --accent:#d4a853;
+  --accent2:#c49240;
+  --accent-glow:rgba(212,168,83,.12);
+  --red:#c0392b;
+  --green:#27ae60;
+  --blue:#2980b9;
+}
+html{font-size:16px;scroll-behavior:smooth}
+body{
+  font-family:'Instrument Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--accent);color:var(--bg)}
+
+/* HEADER */
+.site-header{
+  border-bottom:1px solid var(--border);
+  padding:24px 0;
+  position:sticky;top:0;z-index:100;
+  background:rgba(10,10,12,.92);
+  backdrop-filter:blur(16px);
+}
+.header-inner{
+  max-width:1280px;margin:0 auto;padding:0 32px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.logo{
+  font-family:'DM Serif Display',serif;
+  font-size:1.5rem;letter-spacing:-.02em;
+  color:var(--accent);
+}
+.logo span{color:var(--text2);font-size:.85rem;font-family:'Instrument Sans',sans-serif;margin-left:10px;letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+.header-stats{display:flex;gap:28px}
+.header-stat{text-align:right}
+.header-stat .val{font-family:'JetBrains Mono',monospace;font-size:1.15rem;color:var(--accent);font-weight:500}
+.header-stat .label{font-size:.7rem;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-top:1px}
+
+/* CONTROLS */
+.controls{
+  max-width:1280px;margin:0 auto;padding:28px 32px 0;
+  display:flex;gap:12px;flex-wrap:wrap;align-items:center;
+}
+.search-box{
+  flex:1;min-width:260px;position:relative;
+}
+.search-box input{
+  width:100%;padding:12px 16px 12px 44px;
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);font-size:.9rem;font-family:'Instrument Sans',sans-serif;
+  transition:border-color .2s;
+}
+.search-box input:focus{outline:none;border-color:var(--accent)}
+.search-box input::placeholder{color:var(--text2)}
+.search-box svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text2)}
+.filter-btn{
+  padding:10px 18px;background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;color:var(--text2);font-size:.8rem;font-weight:600;
+  cursor:pointer;transition:all .2s;text-transform:uppercase;letter-spacing:.06em;
+  font-family:'Instrument Sans',sans-serif;
+}
+.filter-btn:hover,.filter-btn.active{background:var(--accent-glow);border-color:var(--accent);color:var(--accent)}
+.sort-select{
+  padding:10px 16px;background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;color:var(--text);font-size:.85rem;
+  font-family:'Instrument Sans',sans-serif;cursor:pointer;
+}
+.sort-select:focus{outline:none;border-color:var(--accent)}
+.sort-select option{background:var(--surface)}
+
+/* LAYOUT */
+.main{max-width:1280px;margin:0 auto;padding:28px 32px 80px}
+.view-toggle{display:flex;gap:8px;margin-bottom:24px}
+.view-btn{
+  padding:8px 16px;background:transparent;border:1px solid var(--border);
+  border-radius:6px;color:var(--text2);font-size:.8rem;cursor:pointer;
+  font-family:'Instrument Sans',sans-serif;font-weight:600;transition:all .2s;
+}
+.view-btn.active{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+
+/* TIMELINE VIEW */
+#timeline-view{position:relative}
+.timeline-axis{
+  position:absolute;left:140px;top:0;bottom:0;width:2px;
+  background:linear-gradient(to bottom,var(--accent),var(--border));
+  opacity:.3;
+}
+.decade-label{
+  font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--accent);
+  letter-spacing:.06em;margin:32px 0 12px;padding-left:0;font-weight:500;
+  position:relative;
+}
+.decade-label::after{content:'';position:absolute;left:0;bottom:-4px;width:40px;height:1px;background:var(--accent);opacity:.4}
+.company-row{
+  display:flex;align-items:center;gap:16px;padding:10px 0;
+  cursor:pointer;transition:background .15s;border-radius:8px;
+  position:relative;
+}
+.company-row:hover{background:rgba(212,168,83,.04)}
+.company-row .year{
+  font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--text2);
+  width:80px;text-align:right;flex-shrink:0;
+}
+.company-row .dot{
+  width:10px;height:10px;border-radius:50%;flex-shrink:0;
+  border:2px solid var(--accent);background:var(--bg);
+  transition:all .2s;
+}
+.company-row:hover .dot{background:var(--accent);box-shadow:0 0 12px rgba(212,168,83,.5)}
+.company-row .info{flex:1;min-width:0}
+.company-row .name{font-weight:600;font-size:.95rem;color:var(--text)}
+.company-row .meta{font-size:.75rem;color:var(--text2);margin-top:2px}
+.company-row .tags{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap}
+.tag{
+  font-size:.65rem;padding:2px 8px;border-radius:4px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.04em;
+}
+.tag-tech{background:rgba(41,128,185,.15);color:#5dade2}
+.tag-finance{background:rgba(39,174,96,.15);color:#58d68d}
+.tag-consumer{background:rgba(192,57,43,.15);color:#ec7063}
+.tag-luxury{background:rgba(212,168,83,.15);color:var(--accent)}
+.tag-food{background:rgba(230,126,34,.15);color:#f0b27a}
+.tag-health{background:rgba(155,89,182,.15);color:#c39bd3}
+.tag-sports{background:rgba(26,188,156,.15);color:#76d7c4}
+.tag-media{background:rgba(241,196,15,.15);color:#f9e79f}
+.tag-industrial{background:rgba(149,165,166,.15);color:#aeb6bf}
+
+/* GRID VIEW */
+#grid-view{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:24px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;
+}
+.card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--accent),transparent);opacity:0;transition:opacity .25s;
+}
+.card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.card:hover::before{opacity:1}
+.card .founded{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:.06em;margin-bottom:6px}
+.card .name{font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:6px}
+.card .desc{font-size:.8rem;color:var(--text2);line-height:1.5;margin-bottom:12px}
+.card .ep-count{
+  font-size:.7rem;color:var(--text2);padding-top:10px;
+  border-top:1px solid var(--border);font-family:'JetBrains Mono',monospace;
+}
+
+/* DETAIL PANEL */
+.detail-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;
+  display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);
+}
+.detail-overlay.open{display:flex}
+.detail-panel{
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  max-width:680px;width:calc(100% - 40px);max-height:85vh;overflow-y:auto;
+  padding:40px;position:relative;
+}
+.detail-panel .close{
+  position:absolute;top:16px;right:16px;background:none;border:none;
+  color:var(--text2);font-size:1.3rem;cursor:pointer;transition:color .2s;
+  width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+  border-radius:6px;
+}
+.detail-panel .close:hover{color:var(--text);background:var(--surface2)}
+.detail-panel h2{font-family:'DM Serif Display',serif;font-size:1.8rem;margin-bottom:4px}
+.detail-panel .detail-founded{font-family:'JetBrains Mono',monospace;font-size:.85rem;color:var(--accent);margin-bottom:16px}
+.detail-panel .detail-desc{font-size:.9rem;color:var(--text2);line-height:1.7;margin-bottom:20px}
+.detail-section{margin-bottom:20px}
+.detail-section h3{font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:8px;font-weight:600}
+.detail-section ul{list-style:none;padding:0}
+.detail-section li{font-size:.85rem;color:var(--text2);padding:4px 0;padding-left:16px;position:relative}
+.detail-section li::before{content:'→';position:absolute;left:0;color:var(--accent);font-size:.75rem}
+.episode-list{display:flex;flex-direction:column;gap:8px}
+.episode-item{
+  padding:12px 16px;background:var(--surface2);border-radius:8px;
+  border:1px solid transparent;transition:border-color .2s;
+}
+.episode-item:hover{border-color:var(--border)}
+.episode-item .ep-title{font-weight:600;font-size:.85rem;margin-bottom:2px}
+.episode-item .ep-date{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text2)}
+.episode-item .ep-themes{font-size:.75rem;color:var(--text2);margin-top:4px}
+
+/* CHART SECTION */
+.chart-section{
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:28px;margin-bottom:28px;
+}
+.chart-section h3{font-family:'DM Serif Display',serif;font-size:1.1rem;margin-bottom:16px;color:var(--text)}
+.chart-container{position:relative;height:280px}
+
+/* FILTER PANEL */
+.filter-panel{
+  max-width:1280px;margin:0 auto;padding:0 32px;
+  max-height:0;overflow:hidden;transition:max-height .3s ease;
+}
+.filter-panel.open{max-height:200px;padding-top:12px}
+.filter-group{display:flex;gap:8px;flex-wrap:wrap;padding:8px 0}
+.filter-chip{
+  padding:6px 14px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:20px;font-size:.75rem;cursor:pointer;transition:all .2s;
+  color:var(--text2);font-weight:500;
+}
+.filter-chip:hover,.filter-chip.active{border-color:var(--accent);color:var(--accent);background:var(--accent-glow)}
+
+/* RESULTS COUNT */
+.results-info{
+  font-size:.8rem;color:var(--text2);margin-bottom:16px;
+  font-family:'JetBrains Mono',monospace;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--text2)}
+
+@media(max-width:768px){
+  .header-inner{flex-direction:column;gap:12px;align-items:flex-start}
+  .header-stats{gap:16px}
+  .controls{flex-direction:column}
+  .search-box{min-width:100%}
+  .main{padding:20px 16px 60px}
+  .timeline-axis{left:60px}
+  .company-row .year{width:40px;font-size:.7rem}
+  .detail-panel{padding:24px}
+  #grid-view{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo">Acquired<span>Company Explorer</span></div>
+    <div class="header-stats">
+      <div class="header-stat"><div class="val" id="total-companies">0</div><div class="label">Companies</div></div>
+      <div class="header-stat"><div class="val" id="total-episodes">0</div><div class="label">Episodes</div></div>
+      <div class="header-stat"><div class="val">2015–2026</div><div class="label">Span</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="search-box">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="search" placeholder="Search companies, themes, industries...">
+  </div>
+  <button class="filter-btn" id="filter-toggle">Filters</button>
+  <select class="sort-select" id="sort-select">
+    <option value="founded-asc">Founded ↑</option>
+    <option value="founded-desc">Founded ↓</option>
+    <option value="name-asc">Name A–Z</option>
+    <option value="episodes-desc">Most Episodes</option>
+    <option value="episode-date">Latest Episode</option>
+  </select>
+</div>
+
+<div class="filter-panel" id="filter-panel">
+  <div class="filter-group" id="industry-filters"></div>
+</div>
+
+<div class="main">
+  <div class="chart-section">
+    <h3>Companies by Founding Decade</h3>
+    <div class="chart-container"><canvas id="decadeChart"></canvas></div>
+  </div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+    <div class="results-info" id="results-info"></div>
+    <div class="view-toggle">
+      <button class="view-btn active" data-view="timeline">Timeline</button>
+      <button class="view-btn" data-view="grid">Grid</button>
+    </div>
+  </div>
+
+  <div id="timeline-view"></div>
+  <div id="grid-view" style="display:none"></div>
+</div>
+
+<div class="detail-overlay" id="detail-overlay">
+  <div class="detail-panel" id="detail-panel">
+    <button class="close" id="detail-close">✕</button>
+    <div id="detail-content"></div>
+  </div>
+</div>
+
+<script>
+const DATA = [
+  {
+    name:"Alphabet / Google",founded:1998,industry:"Tech",
+    desc:"From Stanford research project BackRub to the front door of the internet. The most profitable company in America, dominating search, advertising, cloud, and now AI.",
+    themes:["Search dominance","Advertising revolution","AI transformation","Android ecosystem","YouTube acquisition"],
+    episodes:[
+      {title:"Google: The Origin of Search",date:"Jun 2025",season:"Summer 2025, Ep 2"},
+      {title:"Google: The AI Company",date:"Oct 2025",season:"Fall 2025, Ep 1"},
+      {title:"Alphabet Inc.",date:"Aug 2025",season:"Summer 2025, Ep 4"}
+    ]
+  },
+  {
+    name:"Microsoft",founded:1975,industry:"Tech",
+    desc:"Bill Gates and Paul Allen built the operating system that defined personal computing. From MS-DOS to Azure cloud, Microsoft's reinvention under Satya Nadella made it one of the world's most valuable companies.",
+    themes:["OS monopoly","Enterprise pivot","Cloud transformation","Windows ecosystem","AI partnership with OpenAI"],
+    episodes:[
+      {title:"Microsoft Volume I",date:"Apr 2024",season:"Spring 2024, Ep 1"},
+      {title:"Microsoft Volume II",date:"Jul 2024",season:"Summer 2024, Ep 1"},
+      {title:"The Steve Ballmer Interview",date:"Jun 2025",season:"Summer 2025, Ep 1"}
+    ]
+  },
+  {
+    name:"Meta / Facebook",founded:2004,industry:"Tech",
+    desc:"From Harvard dorm room to connecting 3 billion people. Strategic acquisitions of Instagram and WhatsApp, a bold pivot to the metaverse, and massive AI investments under Zuckerberg's singular control.",
+    themes:["Social network effects","Mobile transition","Acquisition strategy","Metaverse bet","AI infrastructure"],
+    episodes:[
+      {title:"Meta",date:"Oct 2024",season:"Fall 2024"},
+      {title:"The Mark Zuckerberg Interview",date:"Sep 2024",season:"Special"},
+      {title:"Acquired LIVE from Chase Center (with Zuckerberg, Jensen Huang, Daniel Ek)",date:"Sep 2024",season:"Live Event"}
+    ]
+  },
+  {
+    name:"NVIDIA",founded:1993,industry:"Tech",
+    desc:"Jensen Huang's GPU company went from gaming graphics to powering the AI revolution. NVIDIA's CUDA platform and data center chips made it the backbone of modern AI infrastructure.",
+    themes:["GPU computing","AI infrastructure","CUDA ecosystem","Data center dominance","Gaming origins"],
+    episodes:[
+      {title:"NVIDIA",date:"2023",season:"Season 12"},
+      {title:"Jensen Huang at Chase Center Live",date:"Sep 2024",season:"Live Event"}
+    ]
+  },
+  {
+    name:"Apple",founded:1976,industry:"Tech",
+    desc:"Steve Jobs and Steve Wozniak started in a garage. After Jobs' return in 1997, Apple created the iPod, iPhone, and an ecosystem that redefined consumer technology and became the world's most valuable company.",
+    themes:["Product design philosophy","Vertical integration","Ecosystem lock-in","Retail innovation","Services pivot"],
+    episodes:[
+      {title:"Apple",date:"2018",season:"Season 4"}
+    ]
+  },
+  {
+    name:"Amazon",founded:1994,industry:"Tech",
+    desc:"Jeff Bezos' everything store started with books and became the dominant force in e-commerce, cloud computing (AWS), and logistics. Relentless customer obsession and long-term thinking defined its culture.",
+    themes:["E-commerce dominance","AWS cloud","Logistics network","Long-term thinking","Marketplace model"],
+    episodes:[
+      {title:"Amazon",date:"2019",season:"Season 5"}
+    ]
+  },
+  {
+    name:"Tesla",founded:2003,industry:"Tech",
+    desc:"Elon Musk's electric vehicle company challenged the century-old auto industry. From the Roadster to the Model 3, Tesla proved EVs could be desirable, then expanded into energy storage and autonomous driving.",
+    themes:["EV disruption","Manufacturing innovation","Direct sales model","Energy ecosystem","Autonomous driving"],
+    episodes:[
+      {title:"Tesla",date:"2018",season:"Season 4"}
+    ]
+  },
+  {
+    name:"Costco",founded:1983,industry:"Consumer",
+    desc:"Charlie Munger's favorite company. The cheapest prices in America serving the wealthiest customer base. A masterclass in how seemingly opposite characteristics create incredible company value.",
+    themes:["Membership model","Low SKU count","Employee compensation","Treasure hunt merchandising","Private label strategy"],
+    episodes:[
+      {title:"Costco",date:"2024",season:"Season 14"}
+    ]
+  },
+  {
+    name:"Nike",founded:1964,industry:"Consumer",
+    desc:"The most iconic and prolific brand of the modern era. Phil Knight's journey from selling Japanese shoes out of his car to building a global athletic empire with more drama than Shoe Dog reveals.",
+    themes:["Brand building","Athlete endorsements","Supply chain mastery","Cultural influence","Innovation in materials"],
+    episodes:[
+      {title:"Nike",date:"2023",season:"Season 12"}
+    ]
+  },
+  {
+    name:"Starbucks",founded:1971,industry:"Food & Beverage",
+    desc:"Howard Schultz's 'third place' concept transformed American coffee culture. From a single Seattle store to 39,000+ locations, Starbucks pioneered progressive employee benefits alongside aggressive expansion.",
+    themes:["Third place concept","Employee benefits pioneer","Global expansion","Digital innovation","Brand premiumization"],
+    episodes:[
+      {title:"Starbucks (with Howard Schultz)",date:"Jun 2024",season:"Summer 2024"}
+    ]
+  },
+  {
+    name:"Coca-Cola",founded:1886,industry:"Food & Beverage",
+    desc:"From cocaine-containing patent medicine in post-Civil War America to the world's most recognized brand. Pioneered the first manufacturer coupon, the iconic bottle design, and global distribution through local bottlers.",
+    themes:["Brand power","Distribution innovation","New Coke disaster","Global expansion","Bottler network"],
+    episodes:[
+      {title:"Coca-Cola",date:"Nov 2025",season:"Fall 2025, Ep 3"}
+    ]
+  },
+  {
+    name:"Trader Joe's",founded:1958,industry:"Food & Beverage",
+    desc:"From a small convenience store to $20B+ in annual revenue across 600 stores. Private label strategy, unconventional merchandising, and top-tier employee compensation built a cult grocery brand.",
+    themes:["Private label strategy","Employee compensation","Aldi Nord acquisition","Cult brand building","Supply chain control"],
+    episodes:[
+      {title:"Trader Joe's",date:"Oct 2025",season:"Fall 2025, Ep 2"}
+    ]
+  },
+  {
+    name:"Mars Inc.",founded:1911,industry:"Food & Beverage",
+    desc:"From Frank Mars' candy failures to Forrest Mars Sr.'s creation of Milky Way and M&M's. An innovative family empire that diversified from chocolate into pet care and acquired Kellogg's snacks division.",
+    themes:["Family dynasty","Brand portfolio","Pet care diversification","Acquisition strategy","Private company advantages"],
+    episodes:[
+      {title:"Mars Inc. (the chocolate story)",date:"Dec 2024",season:"Winter 2024"}
+    ]
+  },
+  {
+    name:"LVMH",founded:1987,industry:"Luxury",
+    desc:"Bernard Arnault assembled the world's greatest luxury conglomerate. From hostile takeovers to nurturing heritage brands like Louis Vuitton, Dior, and Moët Hennessy, LVMH defined modern luxury business.",
+    themes:["Luxury conglomerate model","Brand heritage","Hostile takeovers","Vertical integration","Arnault's strategy"],
+    episodes:[
+      {title:"LVMH",date:"2023",season:"Season 11"}
+    ]
+  },
+  {
+    name:"Hermès",founded:1837,industry:"Luxury",
+    desc:"From Parisian harness maker to the pinnacle of luxury. The Birkin bag became synonymous with refined taste. Hermès' commitment to limited production, artisan training, and independence defines luxury craftsmanship.",
+    themes:["Artisan craftsmanship","Birkin bag mythology","Family control","Limited production","Brand integrity"],
+    episodes:[
+      {title:"Hermès",date:"Feb 2024",season:"Winter 2024"}
+    ]
+  },
+  {
+    name:"Rolex",founded:1905,industry:"Luxury",
+    desc:"A series of paradoxes: selling obsolete mechanical devices for 10-1000x digital successors, yet demand is stronger than ever. Hans Wilsdorf built the world's most recognized watch brand.",
+    themes:["Mechanical precision","Brand status","Waitlist economics","Vertical integration","Foundation ownership"],
+    episodes:[
+      {title:"Rolex",date:"Feb 2025",season:"Winter 2025"}
+    ]
+  },
+  {
+    name:"Berkshire Hathaway",founded:1839,industry:"Finance",
+    desc:"Warren Buffett transformed a failing textile mill into the most successful investment conglomerate in history. His value investing philosophy and annual letters became gospel for generations of investors.",
+    themes:["Value investing","Compounding capital","Insurance float","Decentralized management","Long-term thinking"],
+    episodes:[
+      {title:"Berkshire Hathaway",date:"2023",season:"Season 12"}
+    ]
+  },
+  {
+    name:"JPMorgan Chase",founded:1799,industry:"Finance",
+    desc:"America's largest bank, built on Jamie Dimon's 'fortress balance sheet' strategy. From surviving the 2008 financial crisis to acquiring Bear Stearns, WaMu, and First Republic.",
+    themes:["Fortress balance sheet","Crisis acquisitions","Banking consolidation","Risk management","Financial infrastructure"],
+    episodes:[
+      {title:"The Jamie Dimon Interview",date:"Jul 2025",season:"Summer 2025, Ep 3"},
+      {title:"Acquired Live at Radio City Music Hall",date:"Nov 2025",season:"Live Event"}
+    ]
+  },
+  {
+    name:"Visa",founded:1958,industry:"Finance",
+    desc:"The payments network that processes trillions of dollars annually. Visa's story reveals how a cooperative of banks created one of the most profitable business models ever conceived.",
+    themes:["Network effects","Payments infrastructure","Cooperative origins","Digital transactions","Global reach"],
+    episodes:[
+      {title:"Visa",date:"2023",season:"Season 12"}
+    ]
+  },
+  {
+    name:"Renaissance Technologies",founded:1982,industry:"Finance",
+    desc:"Jim Simons' quant hedge fund pioneered algorithmic trading. The Medallion Fund delivered unprecedented returns using mathematics, machine learning, and a culture of radical secrecy.",
+    themes:["Quantitative trading","Medallion Fund","Mathematical models","Secrecy culture","Academic recruitment"],
+    episodes:[
+      {title:"Renaissance Technologies",date:"Mar 2024",season:"Spring 2024"}
+    ]
+  },
+  {
+    name:"TSMC",founded:1987,industry:"Industrial",
+    desc:"Morris Chang's pure-play foundry model revolutionized semiconductors. TSMC manufactures chips for Apple, NVIDIA, and others — the most critical company in the global supply chain.",
+    themes:["Pure-play foundry model","Semiconductor manufacturing","Geopolitical importance","Process node leadership","Customer trust"],
+    episodes:[
+      {title:"TSMC (Remastered)",date:"Jan 2025",season:"Winter 2025"},
+      {title:"TSMC Founder Morris Chang",date:"Jan 2025",season:"Winter 2025"}
+    ]
+  },
+  {
+    name:"IKEA",founded:1943,industry:"Consumer",
+    desc:"Ingvar Kamprad built the world's largest furniture retailer from rural Sweden. Flat-pack furniture, democratic design, and a charitable foundation structure enabled global scale while keeping prices low.",
+    themes:["Flat-pack revolution","Democratic design","Foundation structure","Global expansion","Supply chain mastery"],
+    episodes:[
+      {title:"IKEA",date:"Nov 2024",season:"Fall 2024"}
+    ]
+  },
+  {
+    name:"Nintendo",founded:1889,industry:"Tech",
+    desc:"From playing cards in Kyoto to defining video gaming. Nintendo's creative philosophy — lateral thinking with withered technology — produced iconic franchises and hardware that delighted generations.",
+    themes:["Creative philosophy","Hardware innovation","IP franchise value","Gaming culture","Japanese business"],
+    episodes:[
+      {title:"Nintendo",date:"2023",season:"Season 11"}
+    ]
+  },
+  {
+    name:"Spotify",founded:2006,industry:"Tech",
+    desc:"Daniel Ek built the dominant music streaming platform, transforming how the world listens to music. Navigating complex label relationships while building a two-sided marketplace for creators and listeners.",
+    themes:["Streaming economics","Label negotiations","Creator marketplace","Podcast expansion","Freemium model"],
+    episodes:[
+      {title:"Spotify",date:"2022",season:"Season 10"}
+    ]
+  },
+  {
+    name:"Netflix",founded:1997,industry:"Tech",
+    desc:"From DVD-by-mail to streaming giant. Reed Hastings made bold calls — killing the DVD business, investing billions in originals — that transformed Netflix into a global entertainment powerhouse.",
+    themes:["Streaming disruption","Original content","DVD to digital pivot","Global expansion","Culture doc"],
+    episodes:[
+      {title:"Netflix",date:"2018",season:"Season 4"}
+    ]
+  },
+  {
+    name:"Uber",founded:2009,industry:"Tech",
+    desc:"Travis Kalanick's ride-hailing company disrupted transportation worldwide through aggressive expansion and regulatory battles, becoming one of the most controversial startups in Silicon Valley history.",
+    themes:["Gig economy","Regulatory disruption","Network effects","International expansion","Corporate culture"],
+    episodes:[
+      {title:"Uber",date:"2019",season:"Season 5"}
+    ]
+  },
+  {
+    name:"TikTok / ByteDance",founded:2012,industry:"Tech",
+    desc:"ByteDance's short-form video platform conquered global attention with an AI-driven recommendation algorithm. TikTok reshaped social media, creator culture, and geopolitical tech policy.",
+    themes:["Algorithm-driven content","Creator economy","Geopolitical tensions","Short-form video","Global virality"],
+    episodes:[
+      {title:"TikTok",date:"2019",season:"Season 6"}
+    ]
+  },
+  {
+    name:"Novo Nordisk",founded:1923,industry:"Healthcare",
+    desc:"From pioneering insulin production to developing Ozempic and other GLP-1 drugs. Novo Nordisk's story spans a century of diabetes care innovation and the revolution in obesity treatment.",
+    themes:["Insulin history","GLP-1 revolution","Healthcare economics","Danish pharma","Obesity treatment"],
+    episodes:[
+      {title:"Novo Nordisk (Ozempic)",date:"Jan 2024",season:"Winter 2024"}
+    ]
+  },
+  {
+    name:"Epic Systems",founded:1979,industry:"Healthcare",
+    desc:"Judy Faulkner built the dominant healthcare software company from $140K in startup capital. Epic's unified platform Chronicles controls 42% of the hospital market, transforming medical records.",
+    themes:["Healthcare IT","HITECH Act impact","Founder-led independence","Medical records","Hospital market dominance"],
+    episodes:[
+      {title:"Epic Systems (MyChart)",date:"Apr 2025",season:"Spring 2025"}
+    ]
+  },
+  {
+    name:"Indian Premier League",founded:2008,industry:"Sports",
+    desc:"Cricket's most commercially successful league. The IPL's auction system, centralized revenue model, and Bollywood entertainment mashup created a uniquely Indian sporting phenomenon with global ambitions.",
+    themes:["Franchise sports model","Auction system","Cricket innovation","India's middle class","Entertainment + sports"],
+    episodes:[
+      {title:"Indian Premier League Cricket",date:"Mar 2025",season:"Spring 2025"}
+    ]
+  },
+  {
+    name:"NFL",founded:1920,industry:"Sports",
+    desc:"America's most valuable sports league. From humble beginnings to a media juggernaut, the NFL's revenue sharing model and broadcast strategy built the most dominant league in professional sports.",
+    themes:["Revenue sharing","Broadcast rights","Franchise value","American culture","League economics"],
+    episodes:[
+      {title:"The NFL (2026 Update)",date:"Jan 2026",season:"Special"}
+    ]
+  },
+  {
+    name:"Pixar",founded:1979,industry:"Media",
+    desc:"The first company covered on Acquired. Ed Catmull and Steve Jobs built the animation studio that revolutionized filmmaking, eventually acquired by Disney in one of the most celebrated tech acquisitions ever.",
+    themes:["Animation revolution","Creative culture","Steve Jobs","Disney acquisition","Technology + art"],
+    episodes:[
+      {title:"Pixar (Season 1, Episode 1)",date:"Oct 2015",season:"Season 1, Ep 1"}
+    ]
+  },
+  {
+    name:"Plaid",founded:2013,industry:"Tech",
+    desc:"Zach Perret built the fintech infrastructure company connecting apps to bank accounts. After undoing a $5B Visa acquisition, Plaid charted an independent path as a durable standalone company.",
+    themes:["Fintech infrastructure","Failed acquisition","API economy","Banking connectivity","Independence strategy"],
+    episodes:[
+      {title:"Plaid (with CEO Zach Perret)",date:"May 2025",season:"ACQ2"}
+    ]
+  }
+];
+
+// ─── INDUSTRY MAP ───
+const INDUSTRY_CLASSES = {
+  "Tech":"tag-tech","Finance":"tag-finance","Consumer":"tag-consumer",
+  "Luxury":"tag-luxury","Food & Beverage":"tag-food","Healthcare":"tag-health",
+  "Sports":"tag-sports","Media":"tag-media","Industrial":"tag-industrial"
+};
+
+// ─── STATE ───
+let currentView = "timeline";
+let searchTerm = "";
+let activeIndustry = null;
+let sortMode = "founded-asc";
+
+// ─── INIT ───
+document.addEventListener("DOMContentLoaded",()=>{
+  document.getElementById("total-companies").textContent = DATA.length;
+  document.getElementById("total-episodes").textContent = DATA.reduce((s,c)=>s+c.episodes.length,0);
+  buildIndustryFilters();
+  buildChart();
+  render();
+  bindEvents();
+});
+
+function buildIndustryFilters(){
+  const industries = [...new Set(DATA.map(d=>d.industry))].sort();
+  const cont = document.getElementById("industry-filters");
+  industries.forEach(ind=>{
+    const chip = document.createElement("button");
+    chip.className = "filter-chip";
+    chip.textContent = ind;
+    chip.dataset.industry = ind;
+    chip.addEventListener("click",()=>{
+      if(activeIndustry===ind){activeIndustry=null;chip.classList.remove("active")}
+      else{
+        document.querySelectorAll(".filter-chip").forEach(c=>c.classList.remove("active"));
+        activeIndustry=ind;chip.classList.add("active");
+      }
+      render();
+    });
+    cont.appendChild(chip);
+  });
+}
+
+function buildChart(){
+  const decades = {};
+  DATA.forEach(d=>{
+    const dec = Math.floor(d.founded/10)*10;
+    decades[dec] = (decades[dec]||0)+1;
+  });
+  const labels = Object.keys(decades).sort((a,b)=>a-b).map(d=>d+"s");
+  const values = Object.keys(decades).sort((a,b)=>a-b).map(d=>decades[d]);
+  
+  new Chart(document.getElementById("decadeChart"),{
+    type:"bar",
+    data:{
+      labels,
+      datasets:[{
+        data:values,
+        backgroundColor:"rgba(212,168,83,.25)",
+        borderColor:"rgba(212,168,83,.7)",
+        borderWidth:1,borderRadius:4,
+        hoverBackgroundColor:"rgba(212,168,83,.5)"
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{
+        backgroundColor:"#18181c",titleColor:"#d4a853",bodyColor:"#e8e6e3",
+        borderColor:"#252529",borderWidth:1,cornerRadius:6,
+        padding:10,titleFont:{family:"'JetBrains Mono'",size:11},
+        bodyFont:{family:"'Instrument Sans'",size:12},
+        callbacks:{label:ctx=>ctx.parsed.y+" companies"}
+      }},
+      scales:{
+        x:{grid:{color:"rgba(255,255,255,.04)"},ticks:{color:"#9b9a97",font:{family:"'JetBrains Mono'",size:11}}},
+        y:{grid:{color:"rgba(255,255,255,.04)"},ticks:{color:"#9b9a97",font:{family:"'JetBrains Mono'",size:11},stepSize:1}}
+      }
+    }
+  });
+}
+
+function getFiltered(){
+  let items = [...DATA];
+  if(searchTerm){
+    const q = searchTerm.toLowerCase();
+    items = items.filter(d=>
+      d.name.toLowerCase().includes(q)||
+      d.industry.toLowerCase().includes(q)||
+      d.desc.toLowerCase().includes(q)||
+      d.themes.some(t=>t.toLowerCase().includes(q))||
+      d.episodes.some(e=>e.title.toLowerCase().includes(q))
+    );
+  }
+  if(activeIndustry) items = items.filter(d=>d.industry===activeIndustry);
+  
+  switch(sortMode){
+    case"founded-asc":items.sort((a,b)=>a.founded-b.founded);break;
+    case"founded-desc":items.sort((a,b)=>b.founded-a.founded);break;
+    case"name-asc":items.sort((a,b)=>a.name.localeCompare(b.name));break;
+    case"episodes-desc":items.sort((a,b)=>b.episodes.length-a.episodes.length);break;
+    case"episode-date":items.sort((a,b)=>{
+      const parse=s=>{const[m,y]=s.split(" ");return new Date(m+" 1, "+y)};
+      const la=Math.max(...a.episodes.map(e=>parse(e.date)));
+      const lb=Math.max(...b.episodes.map(e=>parse(e.date)));
+      return lb-la;
+    });break;
+  }
+  return items;
+}
+
+function render(){
+  const items = getFiltered();
+  document.getElementById("results-info").textContent = items.length+" of "+DATA.length+" companies";
+  
+  if(currentView==="timeline") renderTimeline(items);
+  else renderGrid(items);
+}
+
+function renderTimeline(items){
+  const cont = document.getElementById("timeline-view");
+  cont.innerHTML = "";
+  
+  let lastDecade = null;
+  items.forEach(d=>{
+    const decade = Math.floor(d.founded/10)*10;
+    if(decade!==lastDecade){
+      const lbl = document.createElement("div");
+      lbl.className = "decade-label";
+      lbl.textContent = decade+"s";
+      cont.appendChild(lbl);
+      lastDecade = decade;
+    }
+    const row = document.createElement("div");
+    row.className = "company-row";
+    row.innerHTML = `
+      <span class="year">${d.founded}</span>
+      <span class="dot"></span>
+      <div class="info">
+        <div class="name">${d.name}</div>
+        <div class="meta">${d.industry} · ${d.episodes.length} episode${d.episodes.length!==1?'s':''}</div>
+        <div class="tags">
+          <span class="tag ${INDUSTRY_CLASSES[d.industry]||''}">${d.industry}</span>
+          ${d.themes.slice(0,2).map(t=>`<span class="tag" style="background:rgba(255,255,255,.05);color:var(--text2)">${t}</span>`).join('')}
+        </div>
+      </div>
+    `;
+    row.addEventListener("click",()=>openDetail(d));
+    cont.appendChild(row);
+  });
+}
+
+function renderGrid(items){
+  const cont = document.getElementById("grid-view");
+  cont.innerHTML = "";
+  items.forEach(d=>{
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="founded">${d.founded} · ${d.industry}</div>
+      <div class="name">${d.name}</div>
+      <div class="desc">${d.desc.slice(0,120)}${d.desc.length>120?'...':''}</div>
+      <div class="tags" style="margin-bottom:12px">
+        ${d.themes.slice(0,3).map(t=>`<span class="tag" style="background:rgba(255,255,255,.05);color:var(--text2)">${t}</span>`).join('')}
+      </div>
+      <div class="ep-count">${d.episodes.length} episode${d.episodes.length!==1?'s':''}</div>
+    `;
+    card.addEventListener("click",()=>openDetail(d));
+    cont.appendChild(card);
+  });
+}
+
+function openDetail(d){
+  const cont = document.getElementById("detail-content");
+  cont.innerHTML = `
+    <h2>${d.name}</h2>
+    <div class="detail-founded">Founded ${d.founded} · ${d.industry}</div>
+    <div class="detail-desc">${d.desc}</div>
+    <div class="detail-section">
+      <h3>Key Themes</h3>
+      <ul>${d.themes.map(t=>`<li>${t}</li>`).join('')}</ul>
+    </div>
+    <div class="detail-section">
+      <h3>Episodes (${d.episodes.length})</h3>
+      <div class="episode-list">
+        ${d.episodes.map(e=>`
+          <div class="episode-item">
+            <div class="ep-title">${e.title}</div>
+            <div class="ep-date">${e.date} ${e.season?'· '+e.season:''}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  document.getElementById("detail-overlay").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeDetail(){
+  document.getElementById("detail-overlay").classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+function bindEvents(){
+  document.getElementById("search").addEventListener("input",e=>{
+    searchTerm = e.target.value.trim();
+    render();
+  });
+  
+  document.getElementById("sort-select").addEventListener("change",e=>{
+    sortMode = e.target.value;
+    render();
+  });
+  
+  document.getElementById("filter-toggle").addEventListener("click",function(){
+    this.classList.toggle("active");
+    document.getElementById("filter-panel").classList.toggle("open");
+  });
+  
+  document.querySelectorAll(".view-btn").forEach(btn=>{
+    btn.addEventListener("click",function(){
+      document.querySelectorAll(".view-btn").forEach(b=>b.classList.remove("active"));
+      this.classList.add("active");
+      currentView = this.dataset.view;
+      document.getElementById("timeline-view").style.display = currentView==="timeline"?"block":"none";
+      document.getElementById("grid-view").style.display = currentView==="grid"?"grid":"none";
+      render();
+    });
+  });
+  
+  document.getElementById("detail-close").addEventListener("click",closeDetail);
+  document.getElementById("detail-overlay").addEventListener("click",e=>{
+    if(e.target===e.currentTarget) closeDetail();
+  });
+  document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDetail()});
+}
+</script>
+</body>
+</html>
