@@ -297,31 +297,6 @@ const RSS_PROXY_URL = "https://acquired.zachary-zweibel.workers.dev/rss";
 
 // Heuristic categorization for Acquired episodes.
 // The RSS feed doesn't reliably label show formats, so we infer from title/description/links.
-function inferEpisodeCategory({title, desc, web, catRaw, episodeType}){
-  const t=(title||"").toLowerCase();
-  const d=(desc||"").toLowerCase();
-  const w=(web||"").toLowerCase();
-  const c=(catRaw||"").toLowerCase();
-
-  // If RSS provides something meaningful, honor it when it matches our known buckets.
-  const normalized = c.replace(/\s+/g," ").trim();
-  const known = ["main","acq2","interview","special","live"];
-  if(known.includes(normalized)) return normalized[0].toUpperCase()+normalized.slice(1);
-
-  // Live shows: explicit "Live" branding or venue phrasing
-  if(/\bacquired live\b/.test(t) || /\blive at\b/.test(t) || (t.includes(" live ") && !t.includes(" lives "))) return "Live";
-
-  // Interviews: explicit "Interview" wording (often "The X Interview")
-  if(/\binterview\b/.test(t) || /\binterview\b/.test(d)) return "Interview";
-
-  // ACQ2: often branded in description or title
-  if(/\bacq2\b/.test(t) || /\bacq2\b/.test(d) || w.includes("/acq2")) return "ACQ2";
-
-  // Specials/bonus: episodeType=bonus or explicit "special"
-  if((episodeType||"").toLowerCase()==="bonus" || /\bspecial\b/.test(t) || /\bspecial\b/.test(d) || /\b10 years\b/.test(t)) return "Special";
-
-  return "Main";
-}
 
 // Fetch RSS from the Worker (CORS-enabled) and parse into our ALL_EPISODES schema.
 // Falls back to embedded list if anything fails.
@@ -349,12 +324,7 @@ async function loadEpisodesWithFallback(){
         date = `${yyyy}-${mm}-${dd}`;
       }
 
-      // Pull any category-ish hints from RSS, but still infer into our known buckets.
-      const catRaw = (item.querySelector("category")?.textContent || item.querySelector("itunes\\:category")?.textContent || "").trim();
-      const episodeType = (item.querySelector("itunes\\:episodeType")?.textContent || "").trim();
-      const cat = inferEpisodeCategory({ title, desc, web, catRaw, episodeType });
-
-      return { title, date, cat, web, duration: itunesDur, desc };
+      return { title, date, web, duration: itunesDur, desc };
     });
 
     // RSS is typically newest-first; keep it that way (your UI sorts anyway).
@@ -440,6 +410,16 @@ function prettyMonthYear(yyyyMmDd){
   return d.toLocaleString("en-US",{month:"short",year:"numeric"});
 }
 
+function fmtFounded(v){
+  return (typeof v === "number" && Number.isFinite(v)) ? String(v) : "—";
+}
+
+function foundedKey(v){
+  return (typeof v === "number" && Number.isFinite(v)) ? v : Number.POSITIVE_INFINITY;
+}
+
+
+
 document.addEventListener("DOMContentLoaded", async ()=>{
   ALL_EPISODES = await loadEpisodesWithFallback();
   DATA = buildCompanyIndex([...CURATED_COMPANIES], ALL_EPISODES);
@@ -484,33 +464,32 @@ function buildChart(){
               y:{grid:{color:"rgba(255,255,255,.04)"},ticks:{color:"#9b9a97",font:{size:11},stepSize:1}}}
     }
   });
-}function getFiltered(){let items=[...DATA];if(searchTerm){const q=searchTerm.toLowerCase();items=items.filter(d=>d.name.toLowerCase().includes(q)||d.industry.toLowerCase().includes(q)||d.desc.toLowerCase().includes(q)||d.themes.some(t=>t.toLowerCase().includes(q))||d.episodes.some(e=>e.title.toLowerCase().includes(q)))}if(activeIndustry)items=items.filter(d=>d.industry===activeIndustry);switch(sortMode){case"founded-asc":items.sort((a,b)=>a.founded-b.founded);break;case"founded-desc":items.sort((a,b)=>b.founded-a.founded);break;case"name-asc":items.sort((a,b)=>a.name.localeCompare(b.name));break;case"episodes-desc":items.sort((a,b)=>b.episodes.length-a.episodes.length);break;case"episode-date":items.sort((a,b)=>{const p=s=>{const[m,y]=s.split(" ");return new Date(m+" 1, "+y)};return Math.max(...b.episodes.map(e=>p(e.date)))-Math.max(...a.episodes.map(e=>p(e.date)))});break}return items}
+}function getFiltered(){let items=[...DATA];if(searchTerm){const q=searchTerm.toLowerCase();items=items.filter(d=>d.name.toLowerCase().includes(q)||d.industry.toLowerCase().includes(q)||d.desc.toLowerCase().includes(q)||d.themes.some(t=>t.toLowerCase().includes(q))||d.episodes.some(e=>e.title.toLowerCase().includes(q)))}if(activeIndustry)items=items.filter(d=>d.industry===activeIndustry);switch(sortMode){case"founded-asc":items.sort((a,b)=>foundedKey(a.founded)-foundedKey(b.founded) || a.name.localeCompare(b.name));break;case"founded-desc":items.sort((a,b)=>foundedKey(b.founded)-foundedKey(a.founded) || a.name.localeCompare(b.name));break;case"name-asc":items.sort((a,b)=>a.name.localeCompare(b.name));break;case"episodes-desc":items.sort((a,b)=>b.episodes.length-a.episodes.length);break;case"episode-date":items.sort((a,b)=>{const p=s=>{const[m,y]=s.split(" ");return new Date(m+" 1, "+y)};return Math.max(...b.episodes.map(e=>p(e.date)))-Math.max(...a.episodes.map(e=>p(e.date)))});break}return items}
 function render(){const items=getFiltered();document.getElementById("results-info").textContent=items.length+" of "+DATA.length+" companies";if(currentView==="timeline")renderTimeline(items);else renderGrid(items)}
-function renderTimeline(items){const cont=document.getElementById("timeline-view");cont.innerHTML="";let lastDecade=null;items.forEach(d=>{const decade=Math.floor(d.founded/10)*10;if(decade!==lastDecade){const lbl=document.createElement("div");lbl.className="decade-label";lbl.textContent=decade+"s";cont.appendChild(lbl);lastDecade=decade}const row=document.createElement("div");row.className="company-row";row.innerHTML=`<span class="year">${d.founded}</span><span class="dot"></span><div class="info"><div class="name">${d.name}</div><div class="meta">${d.industry} · ${d.episodes.length} episode${d.episodes.length!==1?'s':''}</div><div class="tags"><span class="tag ${INDUSTRY_CLASSES[d.industry]||''}">${d.industry}</span>${d.themes.slice(0,2).map(t=>`<span class="tag" style="background:rgba(255,255,255,.05);color:var(--text2)">${t}</span>`).join('')}</div></div>`;row.addEventListener("click",()=>openDetail(d));cont.appendChild(row)})}
-function renderGrid(items){const cont=document.getElementById("grid-view");cont.innerHTML="";items.forEach(d=>{const card=document.createElement("div");card.className="card";card.innerHTML=`<div class="founded">${d.founded} · ${d.industry}</div><div class="name">${d.name}</div><div class="desc">${d.desc.slice(0,120)}${d.desc.length>120?'...':''}</div><div class="tags" style="margin-bottom:12px">${d.themes.slice(0,3).map(t=>`<span class="tag" style="background:rgba(255,255,255,.05);color:var(--text2)">${t}</span>`).join('')}</div><div class="ep-count">${d.episodes.length} episode${d.episodes.length!==1?'s':''}</div>`;card.addEventListener("click",()=>openDetail(d));cont.appendChild(card)})}
-function openDetail(d){const cont=document.getElementById("detail-content");cont.innerHTML=`<h2>${d.name}</h2><div class="detail-founded">Founded ${d.founded} · ${d.industry}</div><div class="detail-desc">${d.desc}</div><div class="detail-section"><h3>Key Themes</h3><ul>${d.themes.map(t=>`<li>${t}</li>`).join('')}</ul></div><div class="detail-section"><h3>Episodes (${d.episodes.length})</h3><div class="episode-list">${d.episodes.map(e=>`<div class="episode-item"><div class="ep-header"><div><div class="ep-title">${e.title}</div><div class="ep-date">${e.date}${e.season?' · '+e.season:''}</div></div><div class="listen-links">${e.url?`<a href="${e.url}" target="_blank" rel="noopener" class="listen-link apple" onclick="event.stopPropagation()">&#x1F3B5; Podcasts</a>`:''} ${e.web?`<a href="${e.web}" target="_blank" rel="noopener" class="listen-link web" onclick="event.stopPropagation()">↗ Web</a>`:''}</div></div></div>`).join('')}</div></div>`;document.getElementById("detail-overlay").classList.add("open");document.body.style.overflow="hidden"}
+function renderTimeline(items){const cont=document.getElementById("timeline-view");cont.innerHTML="";let lastDecade=null;items.forEach(d=>{const decade=(typeof d.founded==="number" && Number.isFinite(d.founded)) ? Math.floor(d.founded/10)*10 : null;if(decade!==lastDecade){const lbl=document.createElement("div");lbl.className="decade-label";lbl.textContent = (decade===null) ? "Unknown" : (decade+"s");cont.appendChild(lbl);lastDecade=decade}const row=document.createElement("div");row.className="company-row";row.innerHTML=`<span class="year">${fmtFounded(d.founded)}</span><span class="dot"></span><div class="info"><div class="name">${d.name}</div><div class="meta">${d.industry} · ${d.episodes.length} episode${d.episodes.length!==1?'s':''}</div><div class="tags"><span class="tag ${INDUSTRY_CLASSES[d.industry]||''}">${d.industry}</span>${d.themes.slice(0,2).map(t=>`<span class="tag" style="background:rgba(255,255,255,.05);color:var(--text2)">${t}</span>`).join('')}</div></div>`;row.addEventListener("click",()=>openDetail(d));cont.appendChild(row)})}
+function renderGrid(items){const cont=document.getElementById("grid-view");cont.innerHTML="";items.forEach(d=>{const card=document.createElement("div");card.className="card";card.innerHTML=`<div class="founded">${fmtFounded(d.founded)} · ${d.industry}</div><div class="name">${d.name}</div><div class="desc">${d.desc.slice(0,120)}${d.desc.length>120?'...':''}</div><div class="tags" style="margin-bottom:12px">${d.themes.slice(0,3).map(t=>`<span class="tag" style="background:rgba(255,255,255,.05);color:var(--text2)">${t}</span>`).join('')}</div><div class="ep-count">${d.episodes.length} episode${d.episodes.length!==1?'s':''}</div>`;card.addEventListener("click",()=>openDetail(d));cont.appendChild(card)})}
+function openDetail(d){const cont=document.getElementById("detail-content");cont.innerHTML=`<h2>${d.name}</h2><div class="detail-founded">Founded ${fmtFounded(d.founded)} · ${d.industry}</div><div class="detail-desc">${d.desc}</div><div class="detail-section"><h3>Key Themes</h3><ul>${d.themes.map(t=>`<li>${t}</li>`).join('')}</ul></div><div class="detail-section"><h3>Episodes (${d.episodes.length})</h3><div class="episode-list">${d.episodes.map(e=>`<div class="episode-item"><div class="ep-header"><div><div class="ep-title">${e.title}</div><div class="ep-date">${e.date}${e.season?' · '+e.season:''}</div></div><div class="listen-links">${e.url?`<a href="${e.url}" target="_blank" rel="noopener" class="listen-link apple" onclick="event.stopPropagation()">&#x1F3B5; Podcasts</a>`:''} ${e.web?`<a href="${e.web}" target="_blank" rel="noopener" class="listen-link web" onclick="event.stopPropagation()">↗ Web</a>`:''}</div></div></div>`).join('')}</div></div>`;document.getElementById("detail-overlay").classList.add("open");document.body.style.overflow="hidden"}
 function closeDetail(){document.getElementById("detail-overlay").classList.remove("open");document.body.style.overflow=""}
 
 function buildEpisodesTab(){
-  const cats={Main:0,ACQ2:0,Interview:0,Special:0,Live:0};ALL_EPISODES.forEach(e=>cats[e.cat]=(cats[e.cat]||0)+1);
-  document.getElementById("ep-stats-bar").innerHTML=`<div class="ep-stat"><div class="val">${ALL_EPISODES.length}</div><div class="label">Total Episodes</div></div><div class="ep-stat"><div class="val">${cats.Main}</div><div class="label">Main</div></div><div class="ep-stat"><div class="val">${cats.ACQ2+cats.Interview}</div><div class="label">ACQ2 / Interviews</div></div><div class="ep-stat"><div class="val">${cats.Special+cats.Live}</div><div class="label">Specials / Live</div></div><div class="ep-stat"><div class="val">${new Set(ALL_EPISODES.map(e=>e.date.slice(0,4))).size}</div><div class="label">Years</div></div>`;
-  const fc=document.getElementById("ep-cat-filters");
-  ["All","Main","ACQ2","Interview","Special","Live"].forEach(cat=>{const chip=document.createElement("button");chip.className="ep-cat-chip"+(cat==="All"?" active":"");chip.textContent=cat;chip.addEventListener("click",()=>{document.querySelectorAll(".ep-cat-chip").forEach(c=>c.classList.remove("active"));chip.classList.add("active");epActiveCat=cat==="All"?null:cat;renderEpisodes()});fc.appendChild(chip)});
+  const years = new Set(ALL_EPISODES.map(e => (e.date||"").slice(0,4)).filter(Boolean));
+  document.getElementById("ep-stats-bar").innerHTML =
+    `<div class="ep-stat"><div class="val">${ALL_EPISODES.length}</div><div class="label">Total Episodes</div></div>`+
+    `<div class="ep-stat"><div class="val">${years.size}</div><div class="label">Years</div></div>`;
   renderEpisodes();
 }
 function getFilteredEpisodes(){let eps=[...ALL_EPISODES];if(epSearchTerm){const q=epSearchTerm.toLowerCase();eps=eps.filter(e=>e.title.toLowerCase().includes(q))}return eps}
 function renderEpisodes(){
   const eps=getFilteredEpisodes(),cont=document.getElementById("episodes-list");cont.innerHTML="";
   document.getElementById("ep-results-info").textContent=eps.length+" of "+ALL_EPISODES.length+" episodes";
-  const cc={Main:"cat-main",ACQ2:"cat-acq2",Interview:"cat-interview",Special:"cat-special",Live:"cat-live"};
   const ab="https://podcasts.apple.com/us/podcast/acquired/id1050462261";
-  if(epSortMode==="alpha"){eps.forEach((e,i)=>cont.appendChild(mkRow(e,i+1,cc,ab)))}
-  else{let ly=null,n=epSortMode==="newest"?eps.length:1;eps.forEach(e=>{const yr=e.date.slice(0,4);if(yr!==ly){const l=document.createElement("div");l.className="year-group-label";l.textContent=yr;cont.appendChild(l);ly=yr}cont.appendChild(mkRow(e,epSortMode==="newest"?n--:n++,cc,ab))})}
+  if(epSortMode==="alpha"){eps.forEach((e,i)=>cont.appendChild(mkRow(e,i+1,ab)))}
+  else{let ly=null,n=epSortMode==="newest"?eps.length:1;eps.forEach(e=>{const yr=e.date.slice(0,4);if(yr!==ly){const l=document.createElement("div");l.className="year-group-label";l.textContent=yr;cont.appendChild(l);ly=yr}cont.appendChild(mkRow(e,epSortMode==="newest"?n--:n++,ab))})}
 }
-function mkRow(e,num,cc,ab){
+function mkRow(e,num,ab){
   const row=document.createElement("div");row.className="ep-row";
   const d=new Date(e.date+"T12:00:00"),ds=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-  row.innerHTML=`<div class="ep-num">${num}</div><div class="ep-info"><div class="ep-title">${e.title}</div><div class="ep-meta">${ds}</div></div><span class="ep-cat-tag ${cc[e.cat]||''}">${e.cat}</span><div class="ep-links"><a href="${ab}" target="_blank" rel="noopener" class="listen-link apple" onclick="event.stopPropagation()">&#x1F3B5;</a><a href="${e.web}" target="_blank" rel="noopener" class="listen-link web" onclick="event.stopPropagation()">↗</a></div>`;
+  row.innerHTML=`<div class="ep-num">${num}</div><div class="ep-info"><div class="ep-title">${e.title}</div><div class="ep-meta">${ds}</div></div><div class="ep-links"><a href="${ab}" target="_blank" rel="noopener" class="listen-link apple" onclick="event.stopPropagation()">&#x1F3B5;</a><a href="${e.web}" target="_blank" rel="noopener" class="listen-link web" onclick="event.stopPropagation()">↗</a></div>`;
   return row;
 }
 function bindEvents(){
