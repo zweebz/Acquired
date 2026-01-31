@@ -1,90 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Acquired — Episodes</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#041f21;
-  --surface:#062b2c;
-  --surface2:#073536;
-  --border:#0b3a3a;
-  --text:#e8f7f4;
-  --text2:#9bcfc5;
+  --bg:#061f22;
+  --surface:#082a2e;
+  --surface2:#09343a;
+  --border:#0e3f45;
+  --text:#e7fbf7;
+  --text2:#a6d8d0;
   --accent:#35f8ca;
-  --accent2:#29b597;
+  --accent2:#1fb595;
+  --shadow: rgba(0,0,0,.35);
 }
 html{font-size:16px;scroll-behavior:smooth}
-body{font-family:'Instrument Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;-webkit-font-smoothing:antialiased}
+body{font-family:'Instrument Sans',sans-serif;background:radial-gradient(1200px 700px at 50% -10%, rgba(53,248,202,.10), transparent 55%), var(--bg);color:var(--text);min-height:100vh;line-height:1.55;-webkit-font-smoothing:antialiased}
 ::selection{background:var(--accent);color:var(--bg)}
-.site-header{border-bottom:1px solid var(--border);padding:22px 0;position:sticky;top:0;z-index:100;background:rgba(4,31,33,.88);backdrop-filter:blur(16px)}
-.header-inner{max-width:1100px;margin:0 auto;padding:0 22px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
-.logo{font-family:'DM Serif Display',serif;font-size:1.7rem;letter-spacing:-.02em;color:var(--accent)}
-.logo small{color:var(--text2);font-family:'Instrument Sans',sans-serif;font-weight:600;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;margin-left:10px}
-.header-stats{display:flex;gap:18px;align-items:center}
+
+header.site-header{
+  position:sticky;top:0;z-index:50;
+  border-bottom:1px solid var(--border);
+  background:rgba(6,31,34,.86);
+  backdrop-filter:blur(16px);
+}
+.header-inner{
+  max-width:1180px;margin:0 auto;padding:22px 20px;
+  display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+}
+.brand{
+  display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;
+}
+.brand .logo{
+  font-family:'DM Serif Display',serif;
+  font-size:1.9rem;letter-spacing:.04em;
+  color:var(--accent);
+}
+.brand .tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--text2);
+}
+.stats{display:flex;gap:18px;align-items:center}
 .stat{text-align:right}
-.stat .val{font-family:'JetBrains Mono',monospace;font-size:1.1rem;color:var(--accent);font-weight:600}
-.stat .label{font-size:.7rem;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+.stat .val{font-family:'JetBrains Mono',monospace;font-size:1.05rem;color:var(--accent);font-weight:600}
+.stat .label{font-size:.68rem;color:var(--text2);text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
 
-.main{max-width:1100px;margin:0 auto;padding:22px 22px 64px}
-.controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
-.search-box{flex:1;min-width:260px;position:relative}
-.search-box input{width:100%;padding:12px 14px 12px 42px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:.95rem;outline:none}
-.search-box input:focus{border-color:rgba(53,248,202,.55);box-shadow:0 0 0 3px rgba(53,248,202,.12)}
-.search-box svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text2)}
+main{max-width:1180px;margin:0 auto;padding:20px 20px 64px}
+.controls{
+  display:flex;gap:12px;flex-wrap:wrap;align-items:center;
+  margin-bottom:14px;
+}
+.search{flex:1;min-width:260px;position:relative}
+.search input{
+  width:100%;
+  padding:12px 14px 12px 42px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  background:linear-gradient(180deg, rgba(8,42,46,.95), rgba(8,42,46,.85));
+  color:var(--text);
+  font-size:.95rem;
+  outline:none;
+  box-shadow:0 10px 30px var(--shadow);
+}
+.search input:focus{border-color:rgba(53,248,202,.55);box-shadow:0 0 0 3px rgba(53,248,202,.12), 0 10px 30px var(--shadow)}
+.search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text2)}
 
-.select{padding:12px 12px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:.9rem;outline:none}
-.select:focus{border-color:rgba(53,248,202,.55);box-shadow:0 0 0 3px rgba(53,248,202,.12)}
+.select{
+  padding:12px 12px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  background:linear-gradient(180deg, rgba(8,42,46,.95), rgba(8,42,46,.85));
+  color:var(--text);
+  font-size:.9rem;
+  outline:none;
+  box-shadow:0 10px 30px var(--shadow);
+}
+.select:focus{border-color:rgba(53,248,202,.55);box-shadow:0 0 0 3px rgba(53,248,202,.12), 0 10px 30px var(--shadow)}
 
-.badge-row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:10px 0 18px}
-.results-info{color:var(--text2);font-size:.9rem}
-.note{color:var(--text2);font-size:.8rem}
+.subrow{
+  display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  margin:12px 0 18px;color:var(--text2);font-size:.9rem;
+}
+.subrow a{color:var(--accent);text-decoration:none;font-weight:650}
+.subrow a:hover{text-decoration:underline}
 
 .list{display:flex;flex-direction:column;gap:10px}
-.card{background:linear-gradient(180deg, rgba(7,53,54,.9), rgba(6,43,44,.9));border:1px solid var(--border);border-radius:16px;padding:14px 14px 12px;transition:transform .12s ease,border-color .12s ease}
+.card{
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:14px 14px 12px;
+  background:linear-gradient(180deg, rgba(9,52,58,.86), rgba(8,42,46,.86));
+  box-shadow:0 12px 34px var(--shadow);
+  transition:transform .12s ease, border-color .12s ease;
+}
 .card:hover{transform:translateY(-1px);border-color:rgba(53,248,202,.35)}
-.row{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
-.title{font-weight:700;font-size:1rem;line-height:1.3}
-.meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:6px;color:var(--text2);font-size:.85rem}
-.pill{font-family:'JetBrains Mono',monospace;font-size:.75rem;padding:4px 8px;border-radius:999px;border:1px solid rgba(53,248,202,.25);color:var(--accent);background:rgba(53,248,202,.06)}
-.link{color:var(--accent);text-decoration:none;font-weight:650}
-.link:hover{text-decoration:underline}
+.row{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.left{min-width:240px;flex:1}
+.title{font-weight:750;font-size:1.02rem;line-height:1.3}
+.meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:7px;color:var(--text2);font-size:.86rem}
+.pill{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.74rem;
+  padding:4px 9px;
+  border-radius:999px;
+  border:1px solid rgba(53,248,202,.25);
+  color:var(--accent);
+  background:rgba(53,248,202,.06);
+}
+.pill.muted{border-color:rgba(166,216,208,.18);color:var(--text2);background:rgba(166,216,208,.05)}
+
+.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.btn{
+  border:1px solid rgba(53,248,202,.35);
+  background:rgba(53,248,202,.08);
+  color:var(--accent);
+  padding:10px 12px;
+  border-radius:14px;
+  font-weight:750;
+  cursor:pointer;
+  text-decoration:none;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.btn:hover{background:rgba(53,248,202,.13)}
+.btn:active{transform:translateY(1px)}
+.btn.secondary{
+  border-color:rgba(166,216,208,.25);
+  background:rgba(166,216,208,.06);
+  color:var(--text2);
+  font-weight:650;
+}
+.btn.secondary:hover{background:rgba(166,216,208,.10)}
+
 .desc{margin-top:10px;color:var(--text2);font-size:.92rem}
 
+.toast{
+  position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
+  background:rgba(8,42,46,.92);
+  border:1px solid rgba(53,248,202,.35);
+  color:var(--text);
+  padding:10px 12px;border-radius:14px;
+  box-shadow:0 12px 34px var(--shadow);
+  display:none;
+  max-width:min(700px, calc(100vw - 24px));
+  font-size:.92rem;
+}
+
 @media(max-width:768px){
-  .header-inner{padding:0 16px}
-  .main{padding:18px 16px 64px}
+  .header-inner{padding:18px 14px}
+  main{padding:16px 14px 60px}
+  .actions{justify-content:flex-start}
 }
 </style>
 </head>
 <body>
 <header class="site-header">
   <div class="header-inner">
-    <div class="logo">ACQUIRED<small>episodes</small></div>
-    <div class="header-stats">
-      <div class="stat"><div class="val" id="total-episodes">—</div><div class="label">Episodes</div></div>
-      <div class="stat"><div class="val" id="total-industries">—</div><div class="label">Industries</div></div>
+    <div class="brand">
+      <div class="logo">ACQUIRED</div>
+      <div class="tag">EPISODES</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="val" id="stat-episodes">—</div><div class="label">Episodes</div></div>
+      <div class="stat"><div class="val" id="stat-industries">—</div><div class="label">Industries</div></div>
     </div>
   </div>
 </header>
 
-<div class="main">
+<main>
   <div class="controls">
-    <div class="search-box">
+    <div class="search">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
       </svg>
-      <input id="search" type="text" placeholder="Search episodes, companies, industries…">
+      <input id="q" type="text" placeholder="Search episodes, companies, industries…" />
     </div>
 
-    <select class="select" id="industry-select" title="Filter by industry">
+    <select class="select" id="industry">
       <option value="">All industries</option>
     </select>
 
-    <select class="select" id="sort-select" title="Sort">
+    <select class="select" id="sort">
       <option value="newest">Newest first</option>
       <option value="oldest">Oldest first</option>
       <option value="alpha">Title A–Z</option>
@@ -92,54 +192,90 @@ body{font-family:'Instrument Sans',sans-serif;background:var(--bg);color:var(--t
     </select>
   </div>
 
-  <div class="badge-row">
-    <div class="results-info" id="results-info">Loading…</div>
-    <div class="note">Source: <a class="link" href="https://www.acquired.fm/episodes" target="_blank" rel="noopener">acquired.fm/episodes</a> (via your Worker RSS proxy)</div>
+  <div class="subrow">
+    <div id="info">Syncing from RSS…</div>
+    <div>Source: <a href="https://www.acquired.fm/episodes" target="_blank" rel="noopener">acquired.fm/episodes</a> (via Worker RSS)</div>
   </div>
 
   <div class="list" id="list"></div>
-</div>
+</main>
+
+<div class="toast" id="toast"></div>
 
 <script>
 const RSS_URL = "https://acquired.zachary-zweibel.workers.dev/rss";
-const DATA=[];
+const APPLE_SHOW_ID = 1050462261; // Acquired show id on Apple Podcasts
 
-let ALL_EPISODES = [];
+const DATA=[{name:"Alphabet / Google",founded:1998,industry:"Tech",desc:"From Stanford research project BackRub to the front door of the internet. The most profitable company in America, dominating search, advertising, cloud, and now AI.",themes:["Search dominance","Advertising revolution","AI transformation","Android ecosystem","YouTube acquisition"],episodes:[{title:"Google: The Origin of Search",date:"Jun 2025",season:"Summer 2025, Ep 2",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/google"},{title:"Google: The AI Company",date:"Oct 2025",season:"Fall 2025, Ep 1",url:"https://podcasts.apple.com/us/podcast/google-the-ai-company/id1050462261?i=1000730326283",web:"https://www.acquired.fm/episodes/google-the-ai-company"},{title:"Alphabet Inc.",date:"Aug 2025",season:"Summer 2025, Ep 4",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/alphabet-inc"}]},{name:"Microsoft",founded:1975,industry:"Tech",desc:"Bill Gates and Paul Allen built the operating system that defined personal computing. From MS-DOS to Azure cloud, Microsoft's reinvention under Satya Nadella made it one of the world's most valuable companies.",themes:["OS monopoly","Enterprise pivot","Cloud transformation","Windows ecosystem","AI partnership with OpenAI"],episodes:[{title:"Microsoft Volume I",date:"Apr 2024",season:"Spring 2024, Ep 1",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/microsoft"},{title:"Microsoft Volume II",date:"Jul 2024",season:"Summer 2024, Ep 1",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/microsoft-volume-ii"},{title:"The Steve Ballmer Interview",date:"Jun 2025",season:"Summer 2025, Ep 1",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/the-steve-ballmer-interview"}]},{name:"Meta / Facebook",founded:2004,industry:"Tech",desc:"From Harvard dorm room to connecting 3 billion people. Strategic acquisitions of Instagram and WhatsApp, a bold pivot to the metaverse, and massive AI investments under Zuckerberg's singular control.",themes:["Social network effects","Mobile transition","Acquisition strategy","Metaverse bet","AI infrastructure"],episodes:[{title:"Meta",date:"Oct 2024",season:"Fall 2024",url:"https://podcasts.apple.com/us/podcast/meta/id1050462261?i=1000674646827",web:"https://www.acquired.fm/episodes/meta"},{title:"The Mark Zuckerberg Interview",date:"Sep 2024",season:"Special",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/the-mark-zuckerberg-interview"},{title:"Acquired LIVE from Chase Center",date:"Sep 2024",season:"Live Event",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/acquired-live-from-chase-center-with-daniel-ek-emily-chang-jensen-huang-and-mark-zuckerberg"}]},{name:"NVIDIA",founded:1993,industry:"Tech",desc:"Jensen Huang's GPU company went from gaming graphics to powering the AI revolution. NVIDIA's CUDA platform and data center chips made it the backbone of modern AI infrastructure.",themes:["GPU computing","AI infrastructure","CUDA ecosystem","Data center dominance","Gaming origins"],episodes:[{title:"NVIDIA",date:"2023",season:"Season 12",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/nvidia-the-gpu-company-1993-2006"}]},{name:"Apple",founded:1976,industry:"Tech",desc:"Steve Jobs and Steve Wozniak started in a garage. After Jobs' return in 1997, Apple created the iPod, iPhone, and an ecosystem that redefined consumer technology.",themes:["Product design philosophy","Vertical integration","Ecosystem lock-in","Retail innovation","Services pivot"],episodes:[{title:"Apple",date:"2018",season:"Season 4",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes"}]},{name:"Amazon",founded:1994,industry:"Tech",desc:"Jeff Bezos' everything store started with books and became the dominant force in e-commerce, cloud computing (AWS), and logistics.",themes:["E-commerce dominance","AWS cloud","Logistics network","Long-term thinking","Marketplace model"],episodes:[{title:"Amazon",date:"2019",season:"Season 5",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes"}]},{name:"Tesla",founded:2003,industry:"Tech",desc:"Elon Musk's electric vehicle company challenged the century-old auto industry. From the Roadster to the Model 3, Tesla proved EVs could be desirable.",themes:["EV disruption","Manufacturing innovation","Direct sales model","Energy ecosystem","Autonomous driving"],episodes:[{title:"Tesla",date:"2018",season:"Season 4",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes"}]},{name:"Costco",founded:1983,industry:"Consumer",desc:"Charlie Munger's favorite company. The cheapest prices in America serving the wealthiest customer base.",themes:["Membership model","Low SKU count","Employee compensation","Treasure hunt merchandising","Private label strategy"],episodes:[{title:"Costco",date:"Aug 2023",season:"Season 13",url:"https://podcasts.apple.com/us/podcast/costco/id1050462261?i=1000625088063",web:"https://www.acquired.fm/episodes/costco"}]},{name:"Nike",founded:1964,industry:"Consumer",desc:"The most iconic and prolific brand of the modern era. Phil Knight's journey from selling Japanese shoes out of his car to building a global athletic empire.",themes:["Brand building","Athlete endorsements","Supply chain mastery","Cultural influence","Innovation in materials"],episodes:[{title:"Nike",date:"Jul 2023",season:"Season 12",url:"https://podcasts.apple.com/us/podcast/nike/id1050462261?i=1000622225443",web:"https://www.acquired.fm/episodes/nike"}]},{name:"Starbucks",founded:1971,industry:"Food & Beverage",desc:"Howard Schultz's 'third place' concept transformed American coffee culture. From a single Seattle store to 39,000+ locations.",themes:["Third place concept","Employee benefits pioneer","Global expansion","Digital innovation","Brand premiumization"],episodes:[{title:"Starbucks (with Howard Schultz)",date:"Jun 2024",season:"Summer 2024",url:"https://podcasts.apple.com/us/podcast/starbucks-with-howard-schultz/id1050462261?i=1000657758174",web:"https://www.acquired.fm/episodes/starbucks-with-howard-schultz"}]},{name:"Coca-Cola",founded:1886,industry:"Food & Beverage",desc:"From cocaine-containing patent medicine to the world's most recognized brand. Pioneered the first manufacturer coupon, the iconic bottle design, and global distribution.",themes:["Brand power","Distribution innovation","New Coke disaster","Global expansion","Bottler network"],episodes:[{title:"Coca-Cola",date:"Nov 2025",season:"Fall 2025, Ep 3",url:"https://podcasts.apple.com/us/podcast/coca-cola/id1050462261?i=1000738059532",web:"https://www.acquired.fm/episodes/coca-cola"}]},{name:"Trader Joe's",founded:1958,industry:"Food & Beverage",desc:"From a small convenience store to $20B+ in annual revenue. Private label strategy, unconventional merchandising, and top-tier employee compensation.",themes:["Private label strategy","Employee compensation","Aldi Nord acquisition","Cult brand building","Supply chain control"],episodes:[{title:"Trader Joe's",date:"Oct 2025",season:"Fall 2025, Ep 2",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/trader-joes"}]},{name:"Mars Inc.",founded:1911,industry:"Food & Beverage",desc:"From Frank Mars' candy failures to Forrest Mars Sr.'s creation of Milky Way and M&M's. An innovative family empire.",themes:["Family dynasty","Brand portfolio","Pet care diversification","Acquisition strategy","Private company advantages"],episodes:[{title:"Mars Inc. (the chocolate story)",date:"Dec 2024",season:"Winter 2024",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/mars-inc-the-chocolate-story"}]},{name:"LVMH",founded:1987,industry:"Luxury",desc:"Bernard Arnault assembled the world's greatest luxury conglomerate. From hostile takeovers to nurturing heritage brands.",themes:["Luxury conglomerate model","Brand heritage","Hostile takeovers","Vertical integration","Arnault's strategy"],episodes:[{title:"LVMH",date:"2023",season:"Season 11",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/lvmh"}]},{name:"Hermès",founded:1837,industry:"Luxury",desc:"From Parisian harness maker to the pinnacle of luxury. The Birkin bag became synonymous with refined taste.",themes:["Artisan craftsmanship","Birkin bag mythology","Family control","Limited production","Brand integrity"],episodes:[{title:"Hermès",date:"Feb 2024",season:"Winter 2024",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/hermes"}]},{name:"Rolex",founded:1905,industry:"Luxury",desc:"A series of paradoxes: selling obsolete mechanical devices for 10-1000x digital successors, yet demand is stronger than ever.",themes:["Mechanical precision","Brand status","Waitlist economics","Vertical integration","Foundation ownership"],episodes:[{title:"Rolex",date:"Feb 2025",season:"Winter 2025",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/rolex"}]},{name:"Berkshire Hathaway",founded:1839,industry:"Finance",desc:"Warren Buffett transformed a failing textile mill into the most successful investment conglomerate in history.",themes:["Value investing","Compounding capital","Insurance float","Decentralized management","Long-term thinking"],episodes:[{title:"Berkshire Hathaway",date:"2023",season:"Season 12",url:"https://podcasts.apple.com/us/podcast/berkshire-hathaway-part-i/id1050462261?i=1000517976801",web:"https://www.acquired.fm/episodes/berkshire-hathaway-part-i"}]},{name:"JPMorgan Chase",founded:1799,industry:"Finance",desc:"America's largest bank, built on Jamie Dimon's 'fortress balance sheet' strategy.",themes:["Fortress balance sheet","Crisis acquisitions","Banking consolidation","Risk management","Financial infrastructure"],episodes:[{title:"The Jamie Dimon Interview",date:"Jul 2025",season:"Summer 2025, Ep 3",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/the-jamie-dimon-interview"},{title:"Acquired Live at Radio City Music Hall",date:"Nov 2025",season:"Live Event",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/acquired-live-at-radio-city-music-hall-presented-by-j-p-morgan"}]},{name:"Visa",founded:1958,industry:"Finance",desc:"The payments network that processes trillions of dollars annually. Visa's story reveals how a cooperative of banks created one of the most profitable business models ever conceived.",themes:["Network effects","Payments infrastructure","Cooperative origins","Digital transactions","Global reach"],episodes:[{title:"Visa",date:"2023",season:"Season 12",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/visa"}]},{name:"Renaissance Technologies",founded:1982,industry:"Finance",desc:"Jim Simons' quant hedge fund pioneered algorithmic trading. The Medallion Fund delivered unprecedented returns.",themes:["Quantitative trading","Medallion Fund","Mathematical models","Secrecy culture","Academic recruitment"],episodes:[{title:"Renaissance Technologies",date:"Mar 2024",season:"Spring 2024",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/renaissance-technologies"}]},{name:"TSMC",founded:1987,industry:"Industrial",desc:"Morris Chang's pure-play foundry model revolutionized semiconductors. TSMC manufactures chips for Apple, NVIDIA, and others.",themes:["Pure-play foundry model","Semiconductor manufacturing","Geopolitical importance","Process node leadership","Customer trust"],episodes:[{title:"TSMC (Remastered)",date:"Jan 2025",season:"Winter 2025",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/tsmc-remastered"},{title:"TSMC Founder Morris Chang",date:"Jan 2025",season:"Winter 2025",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/tsmc-founder-morris-chang"}]},{name:"IKEA",founded:1943,industry:"Consumer",desc:"Ingvar Kamprad built the world's largest furniture retailer from rural Sweden. Flat-pack furniture, democratic design, and a charitable foundation structure.",themes:["Flat-pack revolution","Democratic design","Foundation structure","Global expansion","Supply chain mastery"],episodes:[{title:"IKEA",date:"Nov 2024",season:"Fall 2024",url:"https://podcasts.apple.com/us/podcast/ikea/id1050462261?i=1000677277227",web:"https://www.acquired.fm/episodes/ikea"}]},{name:"Nintendo",founded:1889,industry:"Tech",desc:"From playing cards in Kyoto to defining video gaming. Nintendo's creative philosophy produced iconic franchises.",themes:["Creative philosophy","Hardware innovation","IP franchise value","Gaming culture","Japanese business"],episodes:[{title:"Nintendo",date:"2023",season:"Season 11",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/nintendo"}]},{name:"Spotify",founded:2006,industry:"Tech",desc:"Daniel Ek built the dominant music streaming platform, transforming how the world listens to music.",themes:["Streaming economics","Label negotiations","Creator marketplace","Podcast expansion","Freemium model"],episodes:[{title:"Spotify",date:"2022",season:"Season 10",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/spotify"}]},{name:"Netflix",founded:1997,industry:"Tech",desc:"From DVD-by-mail to streaming giant. Reed Hastings made bold calls that transformed Netflix into a global entertainment powerhouse.",themes:["Streaming disruption","Original content","DVD to digital pivot","Global expansion","Culture doc"],episodes:[{title:"Netflix",date:"2018",season:"Season 4",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/netflix"}]},{name:"Uber",founded:2009,industry:"Tech",desc:"Travis Kalanick's ride-hailing company disrupted transportation worldwide through aggressive expansion and regulatory battles.",themes:["Gig economy","Regulatory disruption","Network effects","International expansion","Corporate culture"],episodes:[{title:"Uber",date:"2019",season:"Season 5",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes"}]},{name:"TikTok / ByteDance",founded:2012,industry:"Tech",desc:"ByteDance's short-form video platform conquered global attention with an AI-driven recommendation algorithm.",themes:["Algorithm-driven content","Creator economy","Geopolitical tensions","Short-form video","Global virality"],episodes:[{title:"TikTok",date:"2019",season:"Season 6",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes"}]},{name:"Novo Nordisk",founded:1923,industry:"Healthcare",desc:"From pioneering insulin production to developing Ozempic and other GLP-1 drugs. A century of diabetes care innovation.",themes:["Insulin history","GLP-1 revolution","Healthcare economics","Danish pharma","Obesity treatment"],episodes:[{title:"Novo Nordisk (Ozempic)",date:"Jan 2024",season:"Winter 2024",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/novo-nordisk-ozempic"}]},{name:"Epic Systems",founded:1979,industry:"Healthcare",desc:"Judy Faulkner built the dominant healthcare software company from $140K in startup capital.",themes:["Healthcare IT","HITECH Act impact","Founder-led independence","Medical records","Hospital market dominance"],episodes:[{title:"Epic Systems (MyChart)",date:"Apr 2025",season:"Spring 2025",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/epic-systems-mychart"}]},{name:"Indian Premier League",founded:2008,industry:"Sports",desc:"Cricket's most commercially successful league. The IPL's auction system and centralized revenue model created a uniquely Indian sporting phenomenon.",themes:["Franchise sports model","Auction system","Cricket innovation","India's middle class","Entertainment + sports"],episodes:[{title:"Indian Premier League Cricket",date:"Mar 2025",season:"Spring 2025",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/indian-premier-league-cricket"}]},{name:"NFL",founded:1920,industry:"Sports",desc:"America's most valuable sports league. The NFL's revenue sharing model and broadcast strategy built the most dominant league in professional sports.",themes:["Revenue sharing","Broadcast rights","Franchise value","American culture","League economics"],episodes:[{title:"The NFL (2026 Update)",date:"Jan 2026",season:"Special",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/the-nfl"}]},{name:"Pixar",founded:1979,industry:"Media",desc:"The first company covered on Acquired. Ed Catmull and Steve Jobs built the animation studio that revolutionized filmmaking.",themes:["Animation revolution","Creative culture","Steve Jobs","Disney acquisition","Technology + art"],episodes:[{title:"Pixar (Season 1, Episode 1)",date:"Oct 2015",season:"Season 1, Ep 1",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes"}]},{name:"Plaid",founded:2013,industry:"Tech",desc:"Zach Perret built the fintech infrastructure company connecting apps to bank accounts. After undoing a $5B Visa acquisition, Plaid charted an independent path.",themes:["Fintech infrastructure","Failed acquisition","API economy","Banking connectivity","Independence strategy"],episodes:[{title:"Plaid (with CEO Zach Perret)",date:"May 2025",season:"ACQ2",url:"https://podcasts.apple.com/us/podcast/acquired/id1050462261",web:"https://www.acquired.fm/episodes/undoing-a-5-billion-acquisition-and-building-a-durable-standalone-plaid-with-plaid-ceo-zach-perret"}]}];
 
-// Build a lookup of company name -> industry for matching
-const COMPANY_INDEX = (() => {
-  const idx = [];
-  for (const c of (DATA || [])) {
-    if (!c || !c.name) continue;
-    idx.push({
-      name: c.name,
-      key: c.name.toLowerCase(),
-      industry: (c.industry || "").trim()
-    });
-  }
-  // Prefer longest matches first (e.g., "JPMorgan Chase" before "JPMorgan")
-  idx.sort((a,b) => b.key.length - a.key.length);
-  return idx;
-})();
-
-function normalizeTitle(t) {
-  return (t || "")
+// --- Build episode title -> (industry, company, appleUrl) from the curated DATA
+function normKey(s) {
+  return (s || "")
+    .toLowerCase()
+    .replace(/&amp;/g, "&")
+    .replace(/\(.*?\)/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
     .replace(/\s+/g, " ")
-    .replace(/\u2013|\u2014/g, "-")
     .trim();
 }
 
-function inferCompanyAndIndustry(epTitle) {
-  const t = (epTitle || "").toLowerCase();
-  for (const c of COMPANY_INDEX) {
-    if (t.includes(c.key)) {
-      return {
-        company: c.name,
-        industry: c.industry || "Other"
-      };
+const COMPANY_BY_NAME = (DATA || []).map(c => ({ name: c.name, key: (c.name||"").toLowerCase(), industry: c.industry }))
+  .sort((a,b) => (b.key.length - a.key.length));
+
+const EP_LOOKUP = (() => {
+  const m = new Map();
+  for (const c of (DATA || [])) {
+    const ind = c.industry || "Other";
+    const company = c.name || null;
+    for (const ep of (c.episodes || [])) {
+      const k = normKey(ep.title);
+      if (!k) continue;
+      const prev = m.get(k);
+      const next = { industry: ind, company, apple: ep.url || "", web: ep.web || "" };
+      if (!prev) m.set(k, next);
+      else {
+        const prevHasI = /\bi=\d+/.test(prev.apple || "");
+        const nextHasI = /\bi=\d+/.test(next.apple || "");
+        if (!prevHasI && nextHasI) m.set(k, next);
+      }
     }
   }
-  return { company: null, industry: "Other" };
+  return m;
+})();
+
+function inferFromCompanyName(title) {
+  const t = (title || "").toLowerCase();
+  for (const c of COMPANY_BY_NAME) {
+    if (c.key && t.includes(c.key.toLowerCase())) {
+      return { industry: c.industry || "Other", company: c.name };
+    }
+  }
+  return { industry: "Other", company: null };
+}
+
+const KEYWORD_INDUSTRIES = [
+  { industry: "Sports", keys: ["nfl", "nba", "mlb", "nhl", "cricket", "premier league", "ipl", "f1", "formula 1", "ufc", "olympic", "stadium", "league"] },
+  { industry: "Finance", keys: ["visa", "mastercard", "bank", "hedge", "capital", "private equity", "ipo", "jpmorgan", "goldman", "morgan stanley", "berkshire", "buffett", "paypal"] },
+  { industry: "Tech", keys: ["google", "alphabet", "microsoft", "apple", "meta", "facebook", "amazon", "aws", "cloud", "ai", "openai", "nvidia", "software", "internet"] },
+  { industry: "Media", keys: ["pixar", "disney", "netflix", "youtube", "spotify", "warner", "hollywood", "podcast", "music"] },
+  { industry: "Food & Beverage", keys: ["coca cola", "coca-cola", "coke", "pepsi", "starbucks", "mcdonald", "chipotle", "kfc", "trader joe", "restaurant", "coffee"] },
+  { industry: "Luxury", keys: ["hermes", "herm", "lvmh", "rolex", "luxury", "fashion", "birkin"] },
+  { industry: "Healthcare", keys: ["health", "hospital", "pharma", "medical", "biotech"] },
+  { industry: "Industrial", keys: ["boeing", "lockheed", "manufacturing", "factory", "rail", "industrial"] },
+];
+
+function inferFromKeywords(title) {
+  const t = (title || "").toLowerCase();
+  for (const rule of KEYWORD_INDUSTRIES) {
+    for (const k of rule.keys) {
+      if (t.includes(k)) return rule.industry;
+    }
+  }
+  return "Other";
+}
+
+function stripHtml(s) {
+  return (s || "").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
 }
 
 function formatDate(iso) {
@@ -149,16 +285,19 @@ function formatDate(iso) {
   return d.toLocaleDateString(undefined, { year:"numeric", month:"short", day:"numeric" });
 }
 
-async function loadEpisodesFromRss() {
-  const xmlText = await fetch(RSS_URL, { cache: "no-store" }).then(r => r.text());
-  const doc = new DOMParser().parseFromString(xmlText, "text/xml");
+async function loadFromRss() {
+  const xml = await fetch(RSS_URL, { cache: "no-store" }).then(r => r.text());
+  const doc = new DOMParser().parseFromString(xml, "text/xml");
   const items = [...doc.querySelectorAll("item")];
 
   return items.map(item => {
-    const title = normalizeTitle(item.querySelector("title")?.textContent || "Untitled");
+    const titleRaw = item.querySelector("title")?.textContent || "Untitled";
+    const title = titleRaw.replace(/\s+/g, " ").trim();
+    const key = normKey(titleRaw);
+
     const link = (item.querySelector("link")?.textContent || "").trim();
     const pubDate = (item.querySelector("pubDate")?.textContent || "").trim();
-    const description = (item.querySelector("description")?.textContent || "").trim();
+    const description = stripHtml(item.querySelector("description")?.textContent || "");
 
     let date = "";
     const d = new Date(pubDate);
@@ -169,73 +308,152 @@ async function loadEpisodesFromRss() {
       date = `${yyyy}-${mm}-${dd}`;
     }
 
-    const { company, industry } = inferCompanyAndIndustry(title);
+    const hit = EP_LOOKUP.get(key);
+    let industry = hit?.industry || null;
+    let company = hit?.company || null;
+    let apple = hit?.apple || "";
+
+    if (!industry) {
+      const byName = inferFromCompanyName(title);
+      industry = byName.industry;
+      company = company || byName.company;
+    }
+    if (!industry || industry === "Other") {
+      industry = inferFromKeywords(title);
+    }
 
     return {
       title,
+      key,
       date,
-      web: link,
+      industry: industry || "Other",
       company,
-      industry,
-      blurb: description.replace(/<[^>]+>/g, "").slice(0, 260)
+      web: link,
+      blurb: description.slice(0, 260),
+      appleUrl: apple || ""
     };
-  }).filter(e => e.title);
+  });
 }
 
-function buildIndustryOptions(episodes) {
-  const select = document.getElementById("industry-select");
-  const set = new Set();
-  for (const e of episodes) set.add(e.industry || "Other");
-  const industries = [...set].sort((a,b) => a.localeCompare(b));
-  document.getElementById("total-industries").textContent = industries.length;
+// --- Apple Podcasts episode resolution (on demand)
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.style.display = "block";
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(() => el.style.display = "none", 2800);
+}
 
-  // reset options
-  select.innerHTML = '<option value="">All industries</option>';
-  for (const ind of industries) {
-    const opt = document.createElement("option");
-    opt.value = ind;
-    opt.textContent = ind;
-    select.appendChild(opt);
+function cachedAppleUrl(key) {
+  try {
+    const store = JSON.parse(localStorage.getItem("acq_apple_urls") || "{}");
+    return store[key] || "";
+  } catch {
+    return "";
+  }
+}
+function setCachedAppleUrl(key, url) {
+  try {
+    const store = JSON.parse(localStorage.getItem("acq_apple_urls") || "{}");
+    store[key] = url;
+    localStorage.setItem("acq_apple_urls", JSON.stringify(store));
+  } catch {}
+}
+
+function similarity(a,b) {
+  const ta = new Set(normKey(a).split(" ").filter(Boolean));
+  const tb = new Set(normKey(b).split(" ").filter(Boolean));
+  if (!ta.size || !tb.size) return 0;
+  let hit = 0;
+  for (const t of ta) if (tb.has(t)) hit++;
+  return hit / Math.max(ta.size, tb.size);
+}
+
+async function resolveAppleEpisodeUrl(ep) {
+  if (ep.appleUrl && /\bi=\d+/.test(ep.appleUrl)) return ep.appleUrl;
+
+  const cached = cachedAppleUrl(ep.key);
+  if (cached) return cached;
+
+  const term = encodeURIComponent(ep.title);
+  const api = `https://itunes.apple.com/search?term=${term}&media=podcast&entity=podcastEpisode&limit=25`;
+
+  const res = await fetch(api).then(r => r.json());
+
+  const candidates = (res.results || [])
+    .filter(r => (r.collectionId == APPLE_SHOW_ID) || (String(r.collectionId) === String(APPLE_SHOW_ID)))
+    .map(r => ({
+      url: r.trackViewUrl,
+      name: r.trackName,
+      release: r.releaseDate || "",
+      score: similarity(ep.title, r.trackName || "")
+    }))
+    .sort((a,b) => b.score - a.score);
+
+  const best = candidates[0];
+  if (best && best.url && best.score >= 0.55) {
+    setCachedAppleUrl(ep.key, best.url);
+    return best.url;
+  }
+
+  return "https://podcasts.apple.com/us/podcast/acquired/id1050462261";
+}
+
+// --- UI state
+let ALL = [];
+
+function buildIndustrySelect(items) {
+  const sel = document.getElementById("industry");
+  const set = new Set(items.map(i => i.industry || "Other"));
+  const list = [...set].sort((a,b) => a.localeCompare(b));
+  document.getElementById("stat-industries").textContent = list.length;
+  sel.innerHTML = '<option value="">All industries</option>';
+  for (const ind of list) {
+    const o = document.createElement("option");
+    o.value = ind;
+    o.textContent = ind;
+    sel.appendChild(o);
   }
 }
 
-function applyFiltersAndRender() {
-  const q = (document.getElementById("search").value || "").trim().toLowerCase();
-  const ind = document.getElementById("industry-select").value;
-  const sort = document.getElementById("sort-select").value;
+function apply() {
+  const q = (document.getElementById("q").value || "").trim().toLowerCase();
+  const ind = document.getElementById("industry").value;
+  const sort = document.getElementById("sort").value;
 
-  let out = ALL_EPISODES.slice();
+  let out = ALL.slice();
 
   if (ind) out = out.filter(e => (e.industry || "Other") === ind);
 
   if (q) {
     out = out.filter(e => {
-      const hay = `${e.title} ${e.company || ""} ${e.industry || ""}`.toLowerCase();
+      const hay = `${e.title} ${(e.company||"")} ${(e.industry||"")}`.toLowerCase();
       return hay.includes(q);
     });
   }
 
-  if (sort === "newest") {
-    out.sort((a,b) => (b.date || "").localeCompare(a.date || ""));
-  } else if (sort === "oldest") {
-    out.sort((a,b) => (a.date || "").localeCompare(b.date || ""));
-  } else if (sort === "alpha") {
-    out.sort((a,b) => a.title.localeCompare(b.title));
-  } else if (sort === "industry") {
-    out.sort((a,b) => (a.industry || "Other").localeCompare(b.industry || "Other") || (b.date || "").localeCompare(a.date || ""));
-  }
+  if (sort === "newest") out.sort((a,b) => (b.date||"").localeCompare(a.date||""));
+  else if (sort === "oldest") out.sort((a,b) => (a.date||"").localeCompare(b.date||""));
+  else if (sort === "alpha") out.sort((a,b) => a.title.localeCompare(b.title));
+  else if (sort === "industry") out.sort((a,b) => (a.industry||"Other").localeCompare(b.industry||"Other") || (b.date||"").localeCompare(a.date||""));
 
-  renderList(out);
-  document.getElementById("results-info").textContent = `${out.length} episodes shown`;
+  render(out);
+  document.getElementById("info").textContent = `${out.length} episodes shown`;
 }
 
-function renderList(episodes) {
+function render(items) {
   const list = document.getElementById("list");
   list.innerHTML = "";
 
-  for (const e of episodes) {
+  for (const e of items) {
     const card = document.createElement("div");
     card.className = "card";
+
+    const row = document.createElement("div");
+    row.className = "row";
+
+    const left = document.createElement("div");
+    left.className = "left";
 
     const title = document.createElement("div");
     title.className = "title";
@@ -244,40 +462,60 @@ function renderList(episodes) {
     const meta = document.createElement("div");
     meta.className = "meta";
 
-    const datePill = document.createElement("span");
-    datePill.className = "pill";
-    datePill.textContent = formatDate(e.date);
+    const dateP = document.createElement("span");
+    dateP.className = "pill";
+    dateP.textContent = formatDate(e.date);
 
-    const indPill = document.createElement("span");
-    indPill.className = "pill";
-    indPill.textContent = e.industry || "Other";
+    const indP = document.createElement("span");
+    indP.className = "pill";
+    indP.textContent = e.industry || "Other";
 
-    meta.appendChild(datePill);
-    meta.appendChild(indPill);
+    meta.appendChild(dateP);
+    meta.appendChild(indP);
 
     if (e.company) {
-      const cPill = document.createElement("span");
-      cPill.className = "pill";
-      cPill.textContent = e.company;
-      meta.appendChild(cPill);
+      const cP = document.createElement("span");
+      cP.className = "pill muted";
+      cP.textContent = e.company;
+      meta.appendChild(cP);
     }
 
-    const link = document.createElement("a");
-    link.className = "link";
-    link.href = e.web || "#";
-    link.target = "_blank";
-    link.rel = "noopener";
-    link.textContent = "Open episode page";
-
-    const top = document.createElement("div");
-    top.className = "row";
-    const left = document.createElement("div");
     left.appendChild(title);
     left.appendChild(meta);
-    top.appendChild(left);
-    top.appendChild(link);
 
-    card.appendChild(top);
+    const actions = document.createElement("div");
+    actions.className = "actions";
+
+    const appleBtn = document.createElement("button");
+    appleBtn.className = "btn";
+    appleBtn.type = "button";
+    appleBtn.textContent = "Open in Apple Podcasts";
+    appleBtn.addEventListener("click", async () => {
+      toast("Finding this episode in Apple Podcasts…");
+      try {
+        const url = await resolveAppleEpisodeUrl(e);
+        window.open(url, "_blank", "noopener");
+      } catch (err) {
+        console.error(err);
+        toast("Couldn't resolve episode link. Opening show in Podcasts…");
+        window.open("https://podcasts.apple.com/us/podcast/acquired/id1050462261", "_blank", "noopener");
+      }
+    });
+
+    const webBtn = document.createElement("a");
+    webBtn.className = "btn secondary";
+    webBtn.href = e.web || "https://www.acquired.fm/episodes";
+    webBtn.target = "_blank";
+    webBtn.rel = "noopener";
+    webBtn.textContent = "Website";
+
+    actions.appendChild(appleBtn);
+    actions.appendChild(webBtn);
+
+    row.appendChild(left);
+    row.appendChild(actions);
+
+    card.appendChild(row);
 
     if (e.blurb) {
       const desc = document.createElement("div");
@@ -290,26 +528,24 @@ function renderList(episodes) {
   }
 }
 
-function bindEvents() {
-  document.getElementById("search").addEventListener("input", applyFiltersAndRender);
-  document.getElementById("industry-select").addEventListener("change", applyFiltersAndRender);
-  document.getElementById("sort-select").addEventListener("change", applyFiltersAndRender);
+function bind() {
+  document.getElementById("q").addEventListener("input", apply);
+  document.getElementById("industry").addEventListener("change", apply);
+  document.getElementById("sort").addEventListener("change", apply);
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  document.getElementById("results-info").textContent = "Syncing episodes…";
   try {
-    ALL_EPISODES = await loadEpisodesFromRss();
+    ALL = await loadFromRss();
   } catch (e) {
-    console.error("RSS load failed:", e);
-    document.getElementById("results-info").textContent = "Couldn't load episodes from RSS.";
-    ALL_EPISODES = [];
+    console.error(e);
+    document.getElementById("info").textContent = "Couldn't load RSS.";
+    ALL = [];
   }
-
-  document.getElementById("total-episodes").textContent = ALL_EPISODES.length;
-  buildIndustryOptions(ALL_EPISODES);
-  bindEvents();
-  applyFiltersAndRender();
+  document.getElementById("stat-episodes").textContent = ALL.length;
+  buildIndustrySelect(ALL);
+  bind();
+  apply();
 });
 </script>
 </body>
