@@ -295,6 +295,34 @@ let epSearchTerm="",epActiveCat=null,epSortMode="newest";
 // --- Live episode sync via Cloudflare Worker (GitHub Pages friendly) ---
 const RSS_PROXY_URL = "https://acquired.zachary-zweibel.workers.dev/rss";
 
+// Heuristic categorization for Acquired episodes.
+// The RSS feed doesn't reliably label show formats, so we infer from title/description/links.
+function inferEpisodeCategory({title, desc, web, catRaw, episodeType}){
+  const t=(title||"").toLowerCase();
+  const d=(desc||"").toLowerCase();
+  const w=(web||"").toLowerCase();
+  const c=(catRaw||"").toLowerCase();
+
+  // If RSS provides something meaningful, honor it when it matches our known buckets.
+  const normalized = c.replace(/\s+/g," ").trim();
+  const known = ["main","acq2","interview","special","live"];
+  if(known.includes(normalized)) return normalized[0].toUpperCase()+normalized.slice(1);
+
+  // Live shows: explicit "Live" branding or venue phrasing
+  if(/\bacquired live\b/.test(t) || /\blive at\b/.test(t) || (t.includes(" live ") && !t.includes(" lives "))) return "Live";
+
+  // Interviews: explicit "Interview" wording (often "The X Interview")
+  if(/\binterview\b/.test(t) || /\binterview\b/.test(d)) return "Interview";
+
+  // ACQ2: often branded in description or title
+  if(/\bacq2\b/.test(t) || /\bacq2\b/.test(d) || w.includes("/acq2")) return "ACQ2";
+
+  // Specials/bonus: episodeType=bonus or explicit "special"
+  if((episodeType||"").toLowerCase()==="bonus" || /\bspecial\b/.test(t) || /\bspecial\b/.test(d) || /\b10 years\b/.test(t)) return "Special";
+
+  return "Main";
+}
+
 // Fetch RSS from the Worker (CORS-enabled) and parse into our ALL_EPISODES schema.
 // Falls back to embedded list if anything fails.
 async function loadEpisodesWithFallback(){
@@ -321,10 +349,10 @@ async function loadEpisodesWithFallback(){
         date = `${yyyy}-${mm}-${dd}`;
       }
 
-      // Category inference is best-effort; RSS doesn't always label show types cleanly.
-      // We'll preserve anything in <category> or itunes:category if present, else default to "Main".
-      const catRaw = (item.querySelector("category")?.textContent || "").trim();
-      const cat = catRaw || "Main";
+      // Pull any category-ish hints from RSS, but still infer into our known buckets.
+      const catRaw = (item.querySelector("category")?.textContent || item.querySelector("itunes\\:category")?.textContent || "").trim();
+      const episodeType = (item.querySelector("itunes\\:episodeType")?.textContent || "").trim();
+      const cat = inferEpisodeCategory({ title, desc, web, catRaw, episodeType });
 
       return { title, date, cat, web, duration: itunesDur, desc };
     });
